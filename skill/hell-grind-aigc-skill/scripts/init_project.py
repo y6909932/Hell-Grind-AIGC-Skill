@@ -15,6 +15,7 @@ from pathlib import Path
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_ROOT = SKILL_ROOT / "assets" / "project-template"
 PROJECT_ID_PATTERN = re.compile(r"^PRJ-[A-Z0-9][A-Z0-9-]{1,61}$")
+ASPECT_RATIO_PATTERN = re.compile(r"^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$")
 
 
 def slugify(value: str) -> str:
@@ -24,6 +25,14 @@ def slugify(value: str) -> str:
 
 def yaml_string(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ").replace("\r", " ")
+
+
+def normalize_aspect_ratio(value: str) -> str:
+    normalized = value.strip()
+    match = ASPECT_RATIO_PATTERN.fullmatch(normalized)
+    if not match or any(float(part) <= 0 for part in match.groups()):
+        raise ValueError("aspect ratio must use positive W:H values, for example 16:9 or 2.39:1")
+    return normalized
 
 
 def replace_placeholders(root: Path, values: dict[str, str]) -> None:
@@ -41,6 +50,7 @@ def initialize_project(name: str, output: Path, project_id: str, aspect_ratio: s
         raise ValueError("project ID must match PRJ-[A-Z0-9-]")
     if not name.strip():
         raise ValueError("project name cannot be empty")
+    aspect_ratio = normalize_aspect_ratio(aspect_ratio)
     if output.exists() and (not output.is_dir() or any(output.iterdir())):
         raise ValueError(f"refusing to overwrite non-empty target: {output}")
 
@@ -54,7 +64,7 @@ def initialize_project(name: str, output: Path, project_id: str, aspect_ratio: s
                 "PROJECT_ID": project_id,
                 "PROJECT_NAME": yaml_string(name.strip()),
                 "CREATED_DATE": date.today().isoformat(),
-                "ASPECT_RATIO": yaml_string(aspect_ratio.strip()),
+                "ASPECT_RATIO": yaml_string(aspect_ratio),
             },
         )
         if output.exists():
@@ -84,6 +94,7 @@ def main() -> int:
         print(f"error: {error}", file=sys.stderr)
         return 2
     print(f"Created {project_id} at {output}")
+    print("Schema version: 2")
     print("Network requests: 0; database operations: 0")
     return 0
 

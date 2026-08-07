@@ -130,6 +130,41 @@ class ProjectToolsTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(marker.read_text(), "user data")
 
+    def test_initializer_rejects_invalid_v2_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cases = [
+                ("--project-id", "bad-id"),
+                ("--aspect-ratio", ""),
+                ("--aspect-ratio", "wide"),
+                ("--aspect-ratio", "0:1"),
+            ]
+            for index, (flag, value) in enumerate(cases):
+                target = root / f"invalid-{index}"
+                result = run_script(
+                    INIT_SCRIPT,
+                    "--name", "Invalid",
+                    "--output", str(target),
+                    flag, value,
+                )
+                self.assertNotEqual(result.returncode, 0, (flag, value, result.stdout))
+                self.assertFalse(target.exists(), (flag, value))
+            self.assertEqual(list(root.glob(".hell-grind-init-*")), [])
+
+    def test_initializer_reports_v2_schema_and_safe_io_counts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "default-id"
+            result = run_script(
+                INIT_SCRIPT,
+                "--name", "Default ID",
+                "--output", str(project),
+                "--aspect-ratio", "2.39:1",
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertRegex((project / "00_brief/project.yaml").read_text(), r"(?m)^project_id: PRJ-\d{8}-DEFAULT-ID$")
+            self.assertIn("Schema version: 2", result.stdout)
+            self.assertIn("Network requests: 0; database operations: 0", result.stdout)
+
     def test_validator_reports_bad_header_duplicate_id_and_missing_reference(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = self.init_project(Path(temporary))
