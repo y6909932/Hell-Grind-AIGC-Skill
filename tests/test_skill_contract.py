@@ -8,6 +8,28 @@ SKILL_ROOT = REPO_ROOT / "skill" / "hell-grind-aigc-skill"
 
 
 class SkillContractTests(unittest.TestCase):
+    def test_v2_version_and_router_cover_all_entry_modes(self) -> None:
+        self.assertEqual((SKILL_ROOT / "VERSION").read_text().strip(), "2.0.0")
+        skill = (SKILL_ROOT / "SKILL.md").read_text()
+        for phrase in [
+            "生产管理",
+            "图片从零生成",
+            "图片润色扩写",
+            "视频从零生成",
+            "视频润色扩写",
+            "失败诊断",
+            "精简版",
+            "标准版",
+            "导演版",
+        ]:
+            self.assertIn(phrase, skill)
+
+    def test_skill_frontmatter_is_trigger_focused_and_body_is_compact(self) -> None:
+        text = (SKILL_ROOT / "SKILL.md").read_text()
+        description = re.search(r"(?m)^description: (.+)$", text).group(1)
+        self.assertTrue(description.startswith("Use when"))
+        self.assertLessEqual(len(text.splitlines()), 500)
+
     def test_single_parent_skill_routes_both_internal_workflows(self) -> None:
         skill_files = list((REPO_ROOT / "skill").rglob("SKILL.md"))
         self.assertEqual(skill_files, [SKILL_ROOT / "SKILL.md"])

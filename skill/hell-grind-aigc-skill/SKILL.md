@@ -1,28 +1,72 @@
 ---
 name: hell-grind-aigc-skill
-description: Model-agnostic AIGC video production management and prompt creation workflow. Use when Codex needs to initialize, structure, audit, or manage an AI video project; create or polish image prompts; create or polish video prompts; preserve prompt intent and hard constraints; track assets, scenes, shots, generations, continuity, review, and delivery; or turn a loose creative brief into a production-ready AIGC workflow.
+description: Use when Codex needs to structure, manage, audit, or diagnose an AIGC video project; create or polish model-agnostic image or video prompts; preserve prompt intent and hard constraints; or connect assets, scenes, shots, generations, continuity, review, and delivery into a traceable workflow.
 ---
 
 # Hell Grind AIGC Skill
 
-Use one parent Skill with two internal workflows. Keep the deliverable model-independent and separate project truth from provider-specific settings.
+Use this single parent Skill as a model-agnostic AIGC production system. Keep approved project facts, creative instructions, provider settings, generation attempts, and review decisions separate.
 
-## Route the request
+## Classify the request
 
-- For project setup, planning, tracking, audit, continuity, or delivery, use the **生产管理工作流**. Read `references/production-workflow.md` and `references/project-schemas.md`; also read `references/project-qa-gates.md` for audits or delivery checks.
-- For 图片从零生成 or 图片润色扩写, use the **提示词创作工作流**. Read `references/image-prompt-crafting.md`, `references/prompt-preservation.md`, and `references/prompt-quality-rubric.md`.
-- For 视频从零生成 or 视频润色扩写, use the **提示词创作工作流**. Read `references/video-prompt-contract.md`, `references/prompt-preservation.md`, and `references/prompt-quality-rubric.md`.
-- Read `references/prompt-examples.md` only when an example materially helps.
-- When prompt work belongs to an existing project, first read its asset, scene, shot, and continuity records. Carry stable IDs and approved facts into the prompt.
+Determine these dimensions before writing:
+
+- Workflow: 生产管理 / 提示词创作 / 失败诊断.
+- Medium: image / video / mixed project.
+- Operation: create / polish / initialize / audit / diagnose.
+- Richness: 精简版 / 标准版 / 导演版.
+- Context: standalone prompt / existing project.
+- Provider: unspecified / named without adaptation / explicit adaptation requested.
+- Authority: text only / local files / media generation / upload or publication.
+
+## Route to the minimum references
+
+### 生产管理工作流
+
+For project setup, tracking, continuity, review, or delivery, read:
+
+- `references/production-workflow.md`
+- `references/project-schemas.md`
+- `references/project-qa-gates.md` for audit or delivery
+
+### 提示词创作工作流：图片从零生成 / 图片润色扩写
+
+Read:
+
+- `references/image-prompt-crafting.md`
+- `references/prompt-preservation.md`
+- `references/prompt-quality-rubric.md`
+
+### 视频从零生成 / 视频润色扩写
+
+Read:
+
+- `references/video-prompt-contract.md`
+- `references/prompt-preservation.md`
+- `references/prompt-quality-rubric.md`
+
+### 失败诊断
+
+Start with the relevant quality gate and production record. Identify whether the defect belongs to the asset, scene/shot contract, prompt, provider adapter, generation attempt, or edit. Read the image or video guide for the affected layer. Do not default to adding more negative words.
+
+Read `references/prompt-examples.md` only when an example materially helps. For work inside an existing project, first load its approved asset, scene, shot, prompt version, generation, selection, and continuity records.
 
 ## Work in this order
 
-1. Classify the request by workflow, medium, operation, and richness: concise, standard, or director.
-2. Extract the user's intent, hard constraints, reference scope, output use, and unresolved choices.
-3. Ask only for a missing fact that would materially change the result. Otherwise state a conservative assumption.
-4. Apply the selected workflow and keep platform-independent content separate from the platform adapter.
-5. Validate IDs, references, continuity, prompt completeness, contradictions, and delivery gates.
-6. Return the requested artifact plus the fixed output fields defined in the relevant reference.
+1. Extract intent, hard constraints, reference scope, output use, and authority.
+2. Preserve explicit counts, duration, exact text/dialogue, identity, state, rights, and prohibited content.
+3. Ask only when a missing fact would materially change the result; otherwise state a conservative assumption.
+4. Build a model-independent artifact, then place provider-specific settings in a separate platform adapter.
+5. Check IDs, references, timing, spatial logic, continuity, contradictions, and current quality gates.
+6. Return the artifact with the fixed output required by its reference.
+
+## Choose richness deliberately
+
+- **精简版**: low-complexity exploration; keep only result-determining facts.
+- **标准版**: default production form; cover the complete image or shot contract without repeating approved facts.
+- **导演版**: complex action, dialogue, multi-character, multi-shot, or strict-continuity work; expose timing, performance, camera endpoints, audio, continuity, and risk locks.
+
+Richness changes detail, never the user's intent or hard constraints.
 
 ## Initialize or audit a project
 
@@ -34,6 +78,19 @@ python3 scripts/validate_project.py /absolute/project/path
 ```
 
 The initializer must refuse a non-empty target. The validator must remain read-only. Do not replace these safety behaviors with ad hoc file operations.
+
+## Fixed prompt output
+
+Unless the user asks for a narrower artifact, return:
+
+1. Mode and richness.
+2. Intent and hard-constraint snapshot.
+3. Model-independent master prompt.
+4. Separate platform adapter; write `unspecified` when unknown.
+5. Design summary for new prompts or modification summary for polishing.
+6. Assumptions and unresolved choices.
+7. Quality score with concrete deductions.
+8. Risks and first-test recommendation.
 
 ## Preserve boundaries
 
