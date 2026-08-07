@@ -30,6 +30,23 @@ class SkillContractTests(unittest.TestCase):
         self.assertTrue(description.startswith("Use when"))
         self.assertLessEqual(len(text.splitlines()), 500)
 
+    def test_core_methodology_references_define_evidence_and_seven_layers(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text()
+        evidence_path = SKILL_ROOT / "references" / "methodology-evidence.md"
+        architecture_path = SKILL_ROOT / "references" / "prompt-architecture.md"
+        self.assertTrue(evidence_path.is_file())
+        self.assertTrue(architecture_path.is_file())
+        evidence = evidence_path.read_text()
+        architecture = architecture_path.read_text()
+        for phrase in ["115,450", "7,482", "15.41", "规则匹配", "因果"]:
+            self.assertIn(phrase, evidence)
+        for layer in range(1, 8):
+            self.assertRegex(architecture, rf"(?m)^### L{layer} ")
+        for phrase in ["必须保持", "本镜变化", "禁止出现", "冲突优先级", "平台适配层"]:
+            self.assertIn(phrase, architecture)
+        for relative in ["references/methodology-evidence.md", "references/prompt-architecture.md"]:
+            self.assertIn(relative, skill)
+
     def test_single_parent_skill_routes_both_internal_workflows(self) -> None:
         skill_files = list((REPO_ROOT / "skill").rglob("SKILL.md"))
         self.assertEqual(skill_files, [SKILL_ROOT / "SKILL.md"])

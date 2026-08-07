@@ -21,6 +21,8 @@ Determine these dimensions before writing:
 
 ## Route to the minimum references
 
+For any non-trivial prompt, first read `references/prompt-architecture.md`. Read `references/methodology-evidence.md` when explaining why the workflow uses assets, versions, iteration, or risk gates.
+
 ### 生产管理工作流
 
 For project setup, tracking, continuity, review, or delivery, read:
