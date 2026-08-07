@@ -196,6 +196,31 @@ class SkillContractTests(unittest.TestCase):
         self.assertGreaterEqual(len(description), 25)
         self.assertLessEqual(len(description), 64)
 
+    def test_v2_readme_changelog_and_metadata_are_current(self) -> None:
+        readme = (REPO_ROOT / "README.md").read_text()
+        changelog = (REPO_ROOT / "CHANGELOG.md").read_text()
+        metadata = (SKILL_ROOT / "agents" / "openai.yaml").read_text()
+        for phrase in [
+            "v2.0.0",
+            "七层",
+            "audit_prompt.py",
+            "--strict-v2",
+            "v1",
+            "模型无关",
+            "0 个网络请求",
+            "MIT",
+        ]:
+            self.assertIn(phrase, readme)
+        self.assertIn("## 2.0.0 - 2026-08-07", changelog)
+        for relative in [
+            "skill/hell-grind-aigc-skill/scripts/init_project.py",
+            "skill/hell-grind-aigc-skill/scripts/validate_project.py",
+            "skill/hell-grind-aigc-skill/scripts/audit_prompt.py",
+        ]:
+            self.assertTrue((REPO_ROOT / relative).is_file(), relative)
+        self.assertIn("diagnose", metadata.lower())
+        self.assertIn("$hell-grind-aigc-skill", metadata)
+
     def test_references_include_safety_and_fixed_outputs(self) -> None:
         preserve = (SKILL_ROOT / "references" / "prompt-preservation.md").read_text()
         rubric = (SKILL_ROOT / "references" / "prompt-quality-rubric.md").read_text()
