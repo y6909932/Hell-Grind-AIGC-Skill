@@ -47,6 +47,33 @@ class SkillContractTests(unittest.TestCase):
         for relative in ["references/methodology-evidence.md", "references/prompt-architecture.md"]:
             self.assertIn(relative, skill)
 
+    def test_image_asset_and_spatial_guides_are_actionable(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text()
+        image = (SKILL_ROOT / "references" / "image-prompt-crafting.md").read_text()
+        assets = (SKILL_ROOT / "references" / "reference-asset-control.md").read_text()
+        spatial = (SKILL_ROOT / "references" / "spatial-blocking.md").read_text()
+        self.assertEqual(len(re.findall(r"(?m)^\d+\. ", image)), 11)
+        for phrase in ["写作公式", "常见失败", "检查问题", "原创短例"]:
+            self.assertGreaterEqual(image.count(phrase), 11)
+        for phrase in [
+            "identity invariants",
+            "state variables",
+            "多视图",
+            "inherit",
+            "exclude",
+            "道具",
+            "场景",
+            "权利状态",
+        ]:
+            self.assertIn(phrase, assets)
+        for phrase in ["解剖左", "屏幕左", "前景", "中景", "背景", "轴线", "唯一物体", "精确人数"]:
+            self.assertIn(phrase, spatial)
+        for relative in [
+            "references/reference-asset-control.md",
+            "references/spatial-blocking.md",
+        ]:
+            self.assertIn(relative, skill)
+
     def test_single_parent_skill_routes_both_internal_workflows(self) -> None:
         skill_files = list((REPO_ROOT / "skill").rglob("SKILL.md"))
         self.assertEqual(skill_files, [SKILL_ROOT / "SKILL.md"])

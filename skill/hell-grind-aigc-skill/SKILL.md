@@ -36,6 +36,8 @@ For project setup, tracking, continuity, review, or delivery, read:
 Read:
 
 - `references/image-prompt-crafting.md`
+- `references/reference-asset-control.md` for asset sheets, identity/state versions, or reference inheritance
+- `references/spatial-blocking.md` for multiple subjects, exact placement, screen direction, or unique props
 - `references/prompt-preservation.md`
 - `references/prompt-quality-rubric.md`
 
