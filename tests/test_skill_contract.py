@@ -74,6 +74,42 @@ class SkillContractTests(unittest.TestCase):
         ]:
             self.assertIn(relative, skill)
 
+    def test_video_camera_performance_and_action_guides_are_actionable(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text()
+        video = (SKILL_ROOT / "references" / "video-prompt-contract.md").read_text()
+        camera = (SKILL_ROOT / "references" / "camera-editing-language.md").read_text()
+        performance = (SKILL_ROOT / "references" / "performance-direction.md").read_text()
+        action = (SKILL_ROOT / "references" / "action-physics-vfx.md").read_text()
+        self.assertEqual(len(re.findall(r"(?m)^\d+\. ", video)), 12)
+        for phrase in [
+            "open_state",
+            "beat_timeline",
+            "camera_start",
+            "camera_path",
+            "camera_end",
+            "close_state",
+            "continuity_in",
+            "continuity_out",
+            "must_hold",
+            "changes_here",
+            "must_not_appear",
+            "audio_cues",
+            "risk_focus",
+        ]:
+            self.assertIn(phrase, video)
+        for phrase in ["起始构图", "主运动", "稳定方式", "对焦", "结束构图", "焦段视觉效果"]:
+            self.assertIn(phrase, camera)
+        for phrase in ["视线", "呼吸", "停顿", "面部", "身体重心", "静止"]:
+            self.assertIn(phrase, performance)
+        for phrase in ["准备 → 发力 → 接触 → 反作用 → 落定", "投掷", "撞击", "打斗", "爆炸", "粒子"]:
+            self.assertIn(phrase, action)
+        for relative in [
+            "references/camera-editing-language.md",
+            "references/performance-direction.md",
+            "references/action-physics-vfx.md",
+        ]:
+            self.assertIn(relative, skill)
+
     def test_single_parent_skill_routes_both_internal_workflows(self) -> None:
         skill_files = list((REPO_ROOT / "skill").rglob("SKILL.md"))
         self.assertEqual(skill_files, [SKILL_ROOT / "SKILL.md"])

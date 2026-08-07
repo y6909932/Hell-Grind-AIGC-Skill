@@ -46,6 +46,10 @@ Read:
 Read:
 
 - `references/video-prompt-contract.md`
+- `references/camera-editing-language.md` for framing, lens effect, movement, focus, cuts, or camera failures
+- `references/performance-direction.md` for acting, eyelines, breath, dialogue performance, or stillness
+- `references/action-physics-vfx.md` for movement, impact, fights, throws, destruction, creatures, or effects
+- `references/spatial-blocking.md` for exact placement, direction, axis, and unique objects
 - `references/prompt-preservation.md`
 - `references/prompt-quality-rubric.md`
 
