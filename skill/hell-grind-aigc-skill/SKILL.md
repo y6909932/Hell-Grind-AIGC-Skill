@@ -60,7 +60,9 @@ Read:
 
 ### 失败诊断
 
-Start with the relevant quality gate and production record. Identify whether the defect belongs to the asset, scene/shot contract, prompt, provider adapter, generation attempt, or edit. Read the image or video guide for the affected layer. Do not default to adding more negative words.
+Read `references/failure-diagnosis.md`, then the affected layer guide. Start with the relevant quality gate and production record. Identify whether the defect belongs to the asset, scene/shot contract, prompt, provider adapter, generation attempt, or edit. Do not default to adding more negative words.
+
+For repeated generations, candidate comparison, version changes, or budget/stop decisions, read `references/iteration-selection.md`.
 
 Read `references/prompt-examples.md` only when an example materially helps. For work inside an existing project, first load its approved asset, scene, shot, prompt version, generation, selection, and continuity records.
 

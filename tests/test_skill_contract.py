@@ -127,6 +127,46 @@ class SkillContractTests(unittest.TestCase):
                 self.assertIn(phrase, text, f"{filename}: {phrase}")
             self.assertIn(f"references/{filename}", skill)
 
+    def test_iteration_failure_and_production_guides_are_complete(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text()
+        failure = (SKILL_ROOT / "references" / "failure-diagnosis.md").read_text()
+        iteration = (SKILL_ROOT / "references" / "iteration-selection.md").read_text()
+        workflow = (SKILL_ROOT / "references" / "production-workflow.md").read_text()
+        examples = (SKILL_ROOT / "references" / "prompt-examples.md").read_text()
+        for heading in [
+            "资产与身份",
+            "空间与连续性",
+            "动作与表演",
+            "摄影与剪辑",
+            "对白与声音",
+            "光色与材质",
+        ]:
+            self.assertIn(heading, failure)
+        for code in [
+            "F-ID-DRIFT",
+            "F-COUNT",
+            "F-PHYSICS",
+            "F-CAMERA-CONFLICT",
+            "F-DIALOGUE-TEXT",
+            "F-MATERIAL",
+        ]:
+            self.assertIn(code, failure)
+        for phrase in ["资产", "镜头契约", "提示词", "平台适配", "生成随机性", "后期"]:
+            self.assertIn(phrase, failure)
+        for phrase in ["batch_id", "changed_variables", "hypothesis", "decision", "next_action"]:
+            self.assertIn(phrase, iteration)
+        for phrase in ["质量阈值", "连续两个批次", "预算", "能力边界", "后期修复"]:
+            self.assertIn(phrase, iteration)
+        for stage in [
+            "00_brief", "01_story", "02_assets", "03_scenes", "04_shots",
+            "05_prompts", "06_generations", "07_review", "08_edit", "09_delivery",
+        ]:
+            self.assertIn(stage, workflow)
+        self.assertNotRegex(examples, r"https?://")
+        self.assertNotIn("Hell Grind", examples)
+        for relative in ["references/iteration-selection.md", "references/failure-diagnosis.md"]:
+            self.assertIn(relative, skill)
+
     def test_single_parent_skill_routes_both_internal_workflows(self) -> None:
         skill_files = list((REPO_ROOT / "skill").rglob("SKILL.md"))
         self.assertEqual(skill_files, [SKILL_ROOT / "SKILL.md"])
