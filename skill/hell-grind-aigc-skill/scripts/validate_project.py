@@ -21,7 +21,16 @@ REQUIRED_TEXT_FILES = [
     "09_delivery/delivery-checklist.md",
 ]
 
-CSV_SCHEMAS = {
+V1_CSV_SCHEMAS = {
+    "02_assets/assets.csv": ["asset_id", "asset_type", "name", "version", "status", "reference_path", "notes"],
+    "03_scenes/scenes.csv": ["scene_id", "scene_order", "title", "location_id", "time_of_day", "story_goal", "status", "notes"],
+    "04_shots/shots.csv": ["shot_id", "scene_id", "shot_order", "duration_seconds", "status", "prompt_version", "selected_generation_id", "notes"],
+    "06_generations/generation-log.csv": ["generation_id", "shot_id", "prompt_version", "provider", "model", "seed", "created_at", "status", "output_path", "cost", "notes"],
+    "07_review/selection-log.csv": ["selection_id", "shot_id", "generation_id", "decision", "reviewer", "reviewed_at", "notes"],
+    "07_review/continuity-matrix.csv": ["shot_id", "character_ids", "asset_ids", "screen_direction", "costume_state", "injury_state", "prop_state", "environment_state", "notes"],
+}
+
+V2_CSV_SCHEMAS = {
     "02_assets/assets.csv": ["asset_id", "asset_type", "name", "version", "status", "identity_invariants", "reference_ids", "rights_status", "approved_by", "notes"],
     "02_assets/reference-scope.csv": ["reference_id", "asset_id", "source_path_or_url", "rights_status", "inherit_identity", "inherit_state", "inherit_material", "inherit_space", "inherit_composition", "inherit_camera", "inherit_lighting", "inherit_color", "exclude", "approval_status", "notes"],
     "02_assets/asset-state-matrix.csv": ["asset_version_id", "asset_id", "version", "state_name", "identity_invariants", "state_variables", "costume_or_surface", "damage_or_weathering", "carried_props", "reference_ids", "approval_status", "notes"],
@@ -38,17 +47,36 @@ CSV_SCHEMAS = {
     "07_review/waivers.csv": ["waiver_id", "shot_id", "gate_code", "issue", "rationale", "impact", "approved_by", "approved_at", "expires_or_scope", "notes"],
 }
 
-ID_PATTERNS = {
-    "asset_id": re.compile(r"^(CHR|CRT|PROP|LOC|VFX)-[A-Z0-9][A-Z0-9-]*$"),
+V2_ONLY_PATHS = sorted(set(V2_CSV_SCHEMAS) - set(V1_CSV_SCHEMAS))
+
+COMMON_ID_PATTERNS = {
     "scene_id": re.compile(r"^SC\d{3}$"),
     "shot_id": re.compile(r"^SC\d{3}-SH\d{3}$"),
     "generation_id": re.compile(r"^GEN-[A-Z0-9][A-Z0-9-]*$"),
     "selection_id": re.compile(r"^SEL-[A-Z0-9][A-Z0-9-]*$"),
 }
+V1_ASSET_ID_PATTERN = re.compile(r"^(CHR|CRT|PROP|LOC|VFX)-[A-Z0-9][A-Z0-9-]*$")
+V2_ASSET_ID_PATTERN = re.compile(r"^AST-(CHAR|CREA|PROP|LOC|VFX)-[A-Z0-9][A-Z0-9-]*$")
 
 
-def issue(code: str, path: str, message: str) -> dict[str, str]:
-    return {"code": code, "path": path, "message": message}
+def issue(code: str, path: str, message: str, severity: str = "error") -> dict[str, str]:
+    return {"code": code, "severity": severity, "path": path, "message": message}
+
+
+def empty_result(root: Path, issues: list[dict[str, str]], schema_version: int | None = None) -> dict[str, Any]:
+    errors = sum(entry["severity"] == "error" for entry in issues)
+    warnings = sum(entry["severity"] == "warning" for entry in issues)
+    return {
+        "valid": errors == 0,
+        "project": str(root),
+        "schema_version": schema_version,
+        "issues": issues,
+        "error_count": errors,
+        "warning_count": warnings,
+        "counts": {},
+        "network_requests": 0,
+        "database_operations": 0,
+    }
 
 
 def parse_project_yaml(path: Path) -> dict[str, str]:
@@ -61,10 +89,26 @@ def parse_project_yaml(path: Path) -> dict[str, str]:
     return values
 
 
-def read_csv(root: Path, relative: str, required: list[str], issues: list[dict[str, str]]) -> list[dict[str, str]]:
+def parse_schema_version(config: dict[str, str]) -> int:
+    raw = config.get("schema_version", "1")
+    try:
+        value = int(raw)
+    except ValueError:
+        return 0
+    return value
+
+
+def read_csv(
+    root: Path,
+    relative: str,
+    required: list[str],
+    issues: list[dict[str, str]],
+    *,
+    severity: str = "error",
+) -> list[dict[str, str]]:
     path = root / relative
     if not path.is_file():
-        issues.append(issue("MISSING_FILE", relative, "required CSV file is missing"))
+        issues.append(issue("MISSING_FILE", relative, "required CSV file is missing", severity))
         return []
     try:
         with path.open(newline="", encoding="utf-8-sig") as handle:
@@ -72,42 +116,54 @@ def read_csv(root: Path, relative: str, required: list[str], issues: list[dict[s
             headers = reader.fieldnames or []
             for column in required:
                 if column not in headers:
-                    issues.append(issue("MISSING_COLUMN", relative, f"missing column: {column}"))
+                    issues.append(issue("MISSING_COLUMN", relative, f"missing column: {column}", severity))
             return [{key: (value or "").strip() for key, value in row.items() if key is not None} for row in reader]
     except (OSError, csv.Error, UnicodeError) as error:
-        issues.append(issue("INVALID_CSV", relative, str(error)))
+        issues.append(issue("INVALID_CSV", relative, str(error), severity))
         return []
 
 
-def validate_ids(relative: str, rows: list[dict[str, str]], column: str, issues: list[dict[str, str]]) -> set[str]:
+def validate_ids(
+    relative: str,
+    rows: list[dict[str, str]],
+    column: str,
+    pattern: re.Pattern[str],
+    issues: list[dict[str, str]],
+) -> set[str]:
     values = [row.get(column, "") for row in rows if row.get(column, "")]
     for value, count in Counter(values).items():
         if count > 1:
             issues.append(issue("DUPLICATE_ID", relative, f"duplicate {column}: {value}"))
-    pattern = ID_PATTERNS[column]
     for value in values:
         if not pattern.fullmatch(value):
             issues.append(issue("INVALID_ID", relative, f"invalid {column}: {value}"))
     return set(values)
 
 
-def require_references(relative: str, rows: list[dict[str, str]], column: str, valid: set[str], issues: list[dict[str, str]]) -> None:
+def require_references(
+    relative: str,
+    rows: list[dict[str, str]],
+    column: str,
+    valid: set[str],
+    issues: list[dict[str, str]],
+) -> None:
     for index, row in enumerate(rows, start=2):
         value = row.get(column, "")
         if value and value not in valid:
             issues.append(issue("MISSING_REFERENCE", relative, f"row {index} references missing {column}: {value}"))
 
 
-def validate_project(root: Path) -> dict[str, Any]:
+def validate_project(root: Path, *, strict_v2: bool = False) -> dict[str, Any]:
     issues: list[dict[str, str]] = []
     if not root.is_dir():
         issues.append(issue("MISSING_PROJECT", str(root), "project directory does not exist"))
-        return {"valid": False, "project": str(root), "issues": issues, "counts": {}, "network_requests": 0, "database_operations": 0}
+        return empty_result(root, issues)
 
     for relative in REQUIRED_TEXT_FILES:
         if not (root / relative).is_file():
             issues.append(issue("MISSING_FILE", relative, "required file is missing"))
 
+    config: dict[str, str] = {}
     config_path = root / "00_brief/project.yaml"
     if config_path.is_file():
         config = parse_project_yaml(config_path)
@@ -118,7 +174,21 @@ def validate_project(root: Path) -> dict[str, Any]:
         if project_id and not re.fullmatch(r"^PRJ-[A-Z0-9][A-Z0-9-]{1,61}$", project_id):
             issues.append(issue("INVALID_ID", "00_brief/project.yaml", f"invalid project_id: {project_id}"))
 
-    tables = {relative: read_csv(root, relative, columns, issues) for relative, columns in CSV_SCHEMAS.items()}
+    schema_version = parse_schema_version(config)
+    if schema_version not in {1, 2}:
+        issues.append(issue("INVALID_SCHEMA_VERSION", "00_brief/project.yaml", f"unsupported schema_version: {config.get('schema_version', '')}"))
+    effective_version = 2 if strict_v2 or schema_version == 2 else 1
+    schemas = V2_CSV_SCHEMAS if effective_version == 2 else V1_CSV_SCHEMAS
+
+    if schema_version == 1 and strict_v2:
+        issues.append(issue("V2_REQUIRED", "00_brief/project.yaml", "strict v2 validation requires schema_version: 2"))
+    elif schema_version == 1:
+        issues.append(issue("V1_COMPATIBILITY", "00_brief/project.yaml", "schema v1 is accepted in compatibility mode; migrate to v2 for strict production gates", "warning"))
+        for relative in V2_ONLY_PATHS:
+            if not (root / relative).is_file():
+                issues.append(issue("V2_MIGRATION_FILE", relative, "v2 project file is not present", "warning"))
+
+    tables = {relative: read_csv(root, relative, columns, issues) for relative, columns in schemas.items()}
     assets = tables["02_assets/assets.csv"]
     scenes = tables["03_scenes/scenes.csv"]
     shots = tables["04_shots/shots.csv"]
@@ -126,11 +196,12 @@ def validate_project(root: Path) -> dict[str, Any]:
     selections = tables["07_review/selection-log.csv"]
     continuity = tables["07_review/continuity-matrix.csv"]
 
-    asset_ids = validate_ids("02_assets/assets.csv", assets, "asset_id", issues)
-    scene_ids = validate_ids("03_scenes/scenes.csv", scenes, "scene_id", issues)
-    shot_ids = validate_ids("04_shots/shots.csv", shots, "shot_id", issues)
-    generation_ids = validate_ids("06_generations/generation-log.csv", generations, "generation_id", issues)
-    validate_ids("07_review/selection-log.csv", selections, "selection_id", issues)
+    asset_pattern = V2_ASSET_ID_PATTERN if effective_version == 2 else V1_ASSET_ID_PATTERN
+    asset_ids = validate_ids("02_assets/assets.csv", assets, "asset_id", asset_pattern, issues)
+    scene_ids = validate_ids("03_scenes/scenes.csv", scenes, "scene_id", COMMON_ID_PATTERNS["scene_id"], issues)
+    shot_ids = validate_ids("04_shots/shots.csv", shots, "shot_id", COMMON_ID_PATTERNS["shot_id"], issues)
+    generation_ids = validate_ids("06_generations/generation-log.csv", generations, "generation_id", COMMON_ID_PATTERNS["generation_id"], issues)
+    validate_ids("07_review/selection-log.csv", selections, "selection_id", COMMON_ID_PATTERNS["selection_id"], issues)
 
     require_references("03_scenes/scenes.csv", scenes, "location_id", asset_ids, issues)
     require_references("04_shots/shots.csv", shots, "scene_id", scene_ids, issues)
@@ -140,26 +211,35 @@ def validate_project(root: Path) -> dict[str, Any]:
     require_references("07_review/selection-log.csv", selections, "generation_id", generation_ids, issues)
     require_references("07_review/continuity-matrix.csv", continuity, "shot_id", shot_ids, issues)
 
-    counts = {
-        "assets": len(assets),
-        "scenes": len(scenes),
-        "shots": len(shots),
-        "generations": len(generations),
-        "selections": len(selections),
-        "continuity_rows": len(continuity),
-        "references": len(tables["02_assets/reference-scope.csv"]),
-        "asset_states": len(tables["02_assets/asset-state-matrix.csv"]),
-        "spatial_zones": len(tables["03_scenes/spatial-map.csv"]),
-        "beats": len(tables["04_shots/beat-sheet.csv"]),
-        "audio_cues": len(tables["04_shots/audio-cues.csv"]),
-        "prompts": len(tables["05_prompts/prompt-index.csv"]),
-        "iterations": len(tables["06_generations/iteration-log.csv"]),
-        "waivers": len(tables["07_review/waivers.csv"]),
+    count_names = {
+        "02_assets/assets.csv": "assets",
+        "02_assets/reference-scope.csv": "references",
+        "02_assets/asset-state-matrix.csv": "asset_states",
+        "03_scenes/scenes.csv": "scenes",
+        "03_scenes/spatial-map.csv": "spatial_zones",
+        "04_shots/shots.csv": "shots",
+        "04_shots/beat-sheet.csv": "beats",
+        "04_shots/audio-cues.csv": "audio_cues",
+        "05_prompts/prompt-index.csv": "prompts",
+        "06_generations/generation-log.csv": "generations",
+        "06_generations/iteration-log.csv": "iterations",
+        "07_review/selection-log.csv": "selections",
+        "07_review/continuity-matrix.csv": "continuity_rows",
+        "07_review/waivers.csv": "waivers",
     }
+    counts = {count_names[path]: len(rows) for path, rows in tables.items()}
+    severity_rank = {"error": 0, "warning": 1, "info": 2}
+    issues.sort(key=lambda entry: (severity_rank[entry["severity"]], entry["path"], entry["code"], entry["message"]))
+    errors = sum(entry["severity"] == "error" for entry in issues)
+    warnings = sum(entry["severity"] == "warning" for entry in issues)
     return {
-        "valid": not issues,
+        "valid": errors == 0,
         "project": str(root),
+        "schema_version": schema_version,
+        "strict_v2": strict_v2,
         "issues": issues,
+        "error_count": errors,
+        "warning_count": warnings,
         "counts": counts,
         "network_requests": 0,
         "database_operations": 0,
@@ -169,21 +249,23 @@ def validate_project(root: Path) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("project", type=Path, help="Project directory to validate")
+    parser.add_argument("--strict-v2", action="store_true", help="Require schema v2 files and rules")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    result = validate_project(args.project.expanduser().resolve())
+    result = validate_project(args.project.expanduser().resolve(), strict_v2=args.strict_v2)
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         status = "PASS" if result["valid"] else "FAIL"
-        print(f"{status}: {result['project']}")
+        print(f"{status}: {result['project']} (schema v{result['schema_version']})")
         for entry in result["issues"]:
-            print(f"- [{entry['code']}] {entry['path']}: {entry['message']}")
+            print(f"- [{entry['severity']}:{entry['code']}] {entry['path']}: {entry['message']}")
         print(f"Counts: {json.dumps(result['counts'], ensure_ascii=False)}")
+        print(f"Errors: {result['error_count']}; warnings: {result['warning_count']}")
         print("Network requests: 0; database operations: 0")
     return 0 if result["valid"] else 1
 

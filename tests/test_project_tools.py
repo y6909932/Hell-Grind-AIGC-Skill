@@ -48,6 +48,33 @@ class ProjectToolsTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         return project
 
+    def make_v1_project(self, root: Path) -> Path:
+        project = self.init_project(root)
+        config_path = project / "00_brief" / "project.yaml"
+        config_path.write_text(config_path.read_text().replace("schema_version: 2", "schema_version: 1"))
+        legacy_headers = {
+            "02_assets/assets.csv": "asset_id,asset_type,name,version,status,reference_path,notes\n",
+            "03_scenes/scenes.csv": "scene_id,scene_order,title,location_id,time_of_day,story_goal,status,notes\n",
+            "04_shots/shots.csv": "shot_id,scene_id,shot_order,duration_seconds,status,prompt_version,selected_generation_id,notes\n",
+            "06_generations/generation-log.csv": "generation_id,shot_id,prompt_version,provider,model,seed,created_at,status,output_path,cost,notes\n",
+            "07_review/selection-log.csv": "selection_id,shot_id,generation_id,decision,reviewer,reviewed_at,notes\n",
+            "07_review/continuity-matrix.csv": "shot_id,character_ids,asset_ids,screen_direction,costume_state,injury_state,prop_state,environment_state,notes\n",
+        }
+        for relative, header in legacy_headers.items():
+            (project / relative).write_text(header)
+        for relative in [
+            "02_assets/reference-scope.csv",
+            "02_assets/asset-state-matrix.csv",
+            "03_scenes/spatial-map.csv",
+            "04_shots/beat-sheet.csv",
+            "04_shots/audio-cues.csv",
+            "05_prompts/prompt-index.csv",
+            "06_generations/iteration-log.csv",
+            "07_review/waivers.csv",
+        ]:
+            (project / relative).unlink()
+        return project
+
     def test_init_creates_full_project_that_passes_validation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = self.init_project(Path(temporary))
@@ -186,6 +213,32 @@ class ProjectToolsTests(unittest.TestCase):
             result = run_script(VALIDATE_SCRIPT, str(project), "--json")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(tree_digest(project), before)
+
+    def test_v1_compatibility_and_strict_v2_modes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            legacy = self.make_v1_project(root)
+            compatible = run_script(VALIDATE_SCRIPT, str(legacy), "--json")
+            self.assertEqual(compatible.returncode, 0, compatible.stdout + compatible.stderr)
+            payload = json.loads(compatible.stdout)
+            self.assertTrue(payload["valid"])
+            self.assertEqual(payload["schema_version"], 1)
+            self.assertEqual(payload["error_count"], 0)
+            self.assertGreater(payload["warning_count"], 0)
+            self.assertTrue(all(issue["severity"] == "warning" for issue in payload["issues"]))
+
+            strict_legacy = run_script(VALIDATE_SCRIPT, str(legacy), "--strict-v2", "--json")
+            self.assertEqual(strict_legacy.returncode, 1)
+            strict_payload = json.loads(strict_legacy.stdout)
+            self.assertFalse(strict_payload["valid"])
+            self.assertGreater(strict_payload["error_count"], 0)
+
+            current = self.init_project(root / "current-root")
+            strict_current = run_script(VALIDATE_SCRIPT, str(current), "--strict-v2", "--json")
+            self.assertEqual(strict_current.returncode, 0, strict_current.stdout + strict_current.stderr)
+            current_payload = json.loads(strict_current.stdout)
+            self.assertTrue(current_payload["valid"])
+            self.assertEqual(current_payload["schema_version"], 2)
 
 
 if __name__ == "__main__":
