@@ -1,5 +1,6 @@
 import hashlib
 import json
+import csv
 import subprocess
 import sys
 import tempfile
@@ -67,6 +68,57 @@ class ProjectToolsTests(unittest.TestCase):
             self.assertEqual(payload["issues"], [])
             self.assertEqual(payload["network_requests"], 0)
             self.assertEqual(payload["database_operations"], 0)
+
+    def test_init_creates_v2_single_sources_of_truth(self) -> None:
+        expected_headers = {
+            "02_assets/reference-scope.csv": [
+                "reference_id", "asset_id", "source_path_or_url", "rights_status",
+                "inherit_identity", "inherit_state", "inherit_material", "inherit_space",
+                "inherit_composition", "inherit_camera", "inherit_lighting", "inherit_color",
+                "exclude", "approval_status", "notes",
+            ],
+            "02_assets/asset-state-matrix.csv": [
+                "asset_version_id", "asset_id", "version", "state_name", "identity_invariants",
+                "state_variables", "costume_or_surface", "damage_or_weathering", "carried_props",
+                "reference_ids", "approval_status", "notes",
+            ],
+            "03_scenes/spatial-map.csv": [
+                "scene_id", "zone_id", "zone_name", "screen_relation", "depth_layer",
+                "entry_exit", "anchor_objects", "allowed_assets", "lighting_source",
+                "continuity_notes",
+            ],
+            "04_shots/beat-sheet.csv": [
+                "shot_id", "beat_order", "start_seconds", "end_seconds", "actor_or_source",
+                "trigger", "action", "contact_target", "reaction", "end_state", "dialogue_id",
+                "audio_cue_id",
+            ],
+            "04_shots/audio-cues.csv": [
+                "audio_cue_id", "shot_id", "start_seconds", "end_seconds", "category", "source",
+                "content_or_effect", "spatial_position", "mix_priority", "continuity_key", "notes",
+            ],
+            "05_prompts/prompt-index.csv": [
+                "prompt_id", "shot_id", "version", "status", "richness", "master_prompt_path",
+                "adapter_path", "parent_version", "change_reason", "changed_variables",
+                "prompt_sha256", "approved_by", "notes",
+            ],
+            "06_generations/iteration-log.csv": [
+                "iteration_id", "shot_id", "prompt_id", "batch_id", "observed_failure_codes",
+                "responsibility_layer", "changed_variables", "hypothesis", "expected_improvement",
+                "result_generation_ids", "decision", "next_action",
+            ],
+            "07_review/waivers.csv": [
+                "waiver_id", "shot_id", "gate_code", "issue", "rationale", "impact",
+                "approved_by", "approved_at", "expires_or_scope", "notes",
+            ],
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            project = self.init_project(Path(temporary))
+            self.assertIn("schema_version: 2", (project / "00_brief" / "project.yaml").read_text())
+            for relative, expected in expected_headers.items():
+                path = project / relative
+                self.assertTrue(path.is_file(), relative)
+                with path.open(newline="", encoding="utf-8") as handle:
+                    self.assertEqual(next(csv.reader(handle)), expected, relative)
 
     def test_init_refuses_to_overwrite_non_empty_target(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

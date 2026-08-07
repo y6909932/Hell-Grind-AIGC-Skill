@@ -22,12 +22,20 @@ REQUIRED_TEXT_FILES = [
 ]
 
 CSV_SCHEMAS = {
-    "02_assets/assets.csv": ["asset_id", "asset_type", "name", "version", "status", "reference_path", "notes"],
-    "03_scenes/scenes.csv": ["scene_id", "scene_order", "title", "location_id", "time_of_day", "story_goal", "status", "notes"],
-    "04_shots/shots.csv": ["shot_id", "scene_id", "shot_order", "duration_seconds", "status", "prompt_version", "selected_generation_id", "notes"],
-    "06_generations/generation-log.csv": ["generation_id", "shot_id", "prompt_version", "provider", "model", "seed", "created_at", "status", "output_path", "cost", "notes"],
-    "07_review/selection-log.csv": ["selection_id", "shot_id", "generation_id", "decision", "reviewer", "reviewed_at", "notes"],
-    "07_review/continuity-matrix.csv": ["shot_id", "character_ids", "asset_ids", "screen_direction", "costume_state", "injury_state", "prop_state", "environment_state", "notes"],
+    "02_assets/assets.csv": ["asset_id", "asset_type", "name", "version", "status", "identity_invariants", "reference_ids", "rights_status", "approved_by", "notes"],
+    "02_assets/reference-scope.csv": ["reference_id", "asset_id", "source_path_or_url", "rights_status", "inherit_identity", "inherit_state", "inherit_material", "inherit_space", "inherit_composition", "inherit_camera", "inherit_lighting", "inherit_color", "exclude", "approval_status", "notes"],
+    "02_assets/asset-state-matrix.csv": ["asset_version_id", "asset_id", "version", "state_name", "identity_invariants", "state_variables", "costume_or_surface", "damage_or_weathering", "carried_props", "reference_ids", "approval_status", "notes"],
+    "03_scenes/scenes.csv": ["scene_id", "scene_order", "title", "location_id", "time_of_day", "story_goal", "open_state", "close_state", "status", "notes"],
+    "03_scenes/spatial-map.csv": ["scene_id", "zone_id", "zone_name", "screen_relation", "depth_layer", "entry_exit", "anchor_objects", "allowed_assets", "lighting_source", "continuity_notes"],
+    "04_shots/shots.csv": ["shot_id", "scene_id", "shot_order", "duration_seconds", "status", "narrative_goal", "asset_version_ids", "open_state", "close_state", "camera_start", "camera_path", "camera_end", "continuity_in", "continuity_out", "must_hold", "changes_here", "must_not_appear", "risk_focus", "prompt_id", "selected_generation_id", "notes"],
+    "04_shots/beat-sheet.csv": ["shot_id", "beat_order", "start_seconds", "end_seconds", "actor_or_source", "trigger", "action", "contact_target", "reaction", "end_state", "dialogue_id", "audio_cue_id"],
+    "04_shots/audio-cues.csv": ["audio_cue_id", "shot_id", "start_seconds", "end_seconds", "category", "source", "content_or_effect", "spatial_position", "mix_priority", "continuity_key", "notes"],
+    "05_prompts/prompt-index.csv": ["prompt_id", "shot_id", "version", "status", "richness", "master_prompt_path", "adapter_path", "parent_version", "change_reason", "changed_variables", "prompt_sha256", "approved_by", "notes"],
+    "06_generations/generation-log.csv": ["generation_id", "shot_id", "prompt_id", "batch_id", "provider", "model", "seed", "parameters_json", "created_at", "status", "output_path", "cost", "currency", "failure_codes", "notes"],
+    "06_generations/iteration-log.csv": ["iteration_id", "shot_id", "prompt_id", "batch_id", "observed_failure_codes", "responsibility_layer", "changed_variables", "hypothesis", "expected_improvement", "result_generation_ids", "decision", "next_action"],
+    "07_review/selection-log.csv": ["selection_id", "shot_id", "generation_id", "decision", "passed_gates", "known_defects", "continuity_impact", "rationale", "reviewer", "reviewed_at", "notes"],
+    "07_review/continuity-matrix.csv": ["shot_id", "asset_version_ids", "screen_direction", "spatial_state", "costume_state", "injury_state", "prop_state", "environment_state", "action_in", "action_out", "audio_state", "open_issues", "notes"],
+    "07_review/waivers.csv": ["waiver_id", "shot_id", "gate_code", "issue", "rationale", "impact", "approved_by", "approved_at", "expires_or_scope", "notes"],
 }
 
 ID_PATTERNS = {
@@ -139,6 +147,14 @@ def validate_project(root: Path) -> dict[str, Any]:
         "generations": len(generations),
         "selections": len(selections),
         "continuity_rows": len(continuity),
+        "references": len(tables["02_assets/reference-scope.csv"]),
+        "asset_states": len(tables["02_assets/asset-state-matrix.csv"]),
+        "spatial_zones": len(tables["03_scenes/spatial-map.csv"]),
+        "beats": len(tables["04_shots/beat-sheet.csv"]),
+        "audio_cues": len(tables["04_shots/audio-cues.csv"]),
+        "prompts": len(tables["05_prompts/prompt-index.csv"]),
+        "iterations": len(tables["06_generations/iteration-log.csv"]),
+        "waivers": len(tables["07_review/waivers.csv"]),
     }
     return {
         "valid": not issues,
