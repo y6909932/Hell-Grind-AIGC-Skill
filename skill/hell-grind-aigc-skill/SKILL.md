@@ -62,6 +62,8 @@ Read:
 
 Read `references/failure-diagnosis.md`, then the affected layer guide. Start with the relevant quality gate and production record. Identify whether the defect belongs to the asset, scene/shot contract, prompt, provider adapter, generation attempt, or edit. Do not default to adding more negative words.
 
+For identity drift, inspect the approved asset state and reference scope first; do not begin by expanding negative constraints.
+
 For repeated generations, candidate comparison, version changes, or budget/stop decisions, read `references/iteration-selection.md`.
 
 Read `references/prompt-examples.md` only when an example materially helps. For work inside an existing project, first load its approved asset, scene, shot, prompt version, generation, selection, and continuity records.
@@ -89,7 +91,8 @@ Run the bundled scripts when local file creation is requested:
 
 ```bash
 python3 scripts/init_project.py --name "Project name" --output /absolute/project/path
-python3 scripts/validate_project.py /absolute/project/path
+python3 scripts/validate_project.py /absolute/project/path --strict-v2
+python3 scripts/audit_prompt.py /absolute/prompt.md --medium video
 ```
 
 The initializer must refuse a non-empty target. The validator must remain read-only. Do not replace these safety behaviors with ad hoc file operations.
@@ -113,6 +116,6 @@ Unless the user asks for a narrower artifact, return:
 - Do not treat prompt writing as authorization to generate media.
 - Do not invent an authorization, budget, provider, reference right, or delivery approval.
 - Do not copy project-specific Hell Grind characters, assets, or long source prompts into a new project unless the user separately supplies rights and requests reuse.
-- Keep each local initialize/validate operation at 0 network requests and 0 database operations.
+- Keep each local initialize/validate/audit operation at 0 network requests and 0 database operations.
 
 If the user explicitly requests generation or publication, treat it as a separate action and follow the active tool's confirmation, cost, and safety rules.
