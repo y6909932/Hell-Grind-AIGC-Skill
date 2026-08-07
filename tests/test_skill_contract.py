@@ -110,6 +110,23 @@ class SkillContractTests(unittest.TestCase):
         ]:
             self.assertIn(relative, skill)
 
+    def test_sensory_continuity_negative_and_multishot_guides_exist(self) -> None:
+        skill = (SKILL_ROOT / "SKILL.md").read_text()
+        expected = {
+            "lighting-color-material.md": ["光源", "方向", "软硬", "对比", "曝光保护", "60:30:10", "材质响应"],
+            "dialogue-audio.md": ["逐字对白", "发声时间", "静默尾拍", "对白不视觉化", "环境底床", "拟音", "混音优先级"],
+            "continuity-control.md": ["身份连续性", "状态连续性", "空间连续性", "轴线", "动作连续性", "光线", "天气", "声音连续性"],
+            "negative-constraints.md": ["风险驱动", "去重", "正向契约优先", "冲突压缩"],
+            "multi-shot-sequences.md": ["镜头数量", "每段时长", "切点", "接点", "蒙太奇", "最终落点"],
+        }
+        for filename, phrases in expected.items():
+            path = SKILL_ROOT / "references" / filename
+            self.assertTrue(path.is_file(), filename)
+            text = path.read_text()
+            for phrase in phrases:
+                self.assertIn(phrase, text, f"{filename}: {phrase}")
+            self.assertIn(f"references/{filename}", skill)
+
     def test_single_parent_skill_routes_both_internal_workflows(self) -> None:
         skill_files = list((REPO_ROOT / "skill").rglob("SKILL.md"))
         self.assertEqual(skill_files, [SKILL_ROOT / "SKILL.md"])

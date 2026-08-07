@@ -50,6 +50,11 @@ Read:
 - `references/performance-direction.md` for acting, eyelines, breath, dialogue performance, or stillness
 - `references/action-physics-vfx.md` for movement, impact, fights, throws, destruction, creatures, or effects
 - `references/spatial-blocking.md` for exact placement, direction, axis, and unique objects
+- `references/lighting-color-material.md` for motivated light, exposure, palette, surfaces, or weather
+- `references/dialogue-audio.md` for exact dialogue, lips, ambience, foley, silence, or mix
+- `references/continuity-control.md` for cross-shot identity, state, axis, action, environment, or sound
+- `references/negative-constraints.md` when selecting and compressing failure-specific avoid rules
+- `references/multi-shot-sequences.md` for cuts, dialogue coverage, action sequences, or montage
 - `references/prompt-preservation.md`
 - `references/prompt-quality-rubric.md`
 
