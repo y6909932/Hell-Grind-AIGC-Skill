@@ -18,7 +18,7 @@ function Require-Command {
 
 function Get-NormalizedStatus {
     param([Parameter(Mandatory = $true)][string]$IgnoredRelativeDir)
-    $prefix = $IgnoredRelativeDir.TrimEnd('/', '\\')
+    $prefix = $IgnoredRelativeDir.TrimEnd('/', '\')
     $pattern = [regex]::Escape($prefix) + '([/\\]|$)'
     $lines = @(& git status --porcelain=v1 --untracked-files=all 2>&1)
     if ($LASTEXITCODE -ne 0) {
