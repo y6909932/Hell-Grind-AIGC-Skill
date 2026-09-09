@@ -77,6 +77,25 @@ class ValidationHardeningTests(unittest.TestCase):
             self.assertIn("PROMPT_HASH_MISMATCH", codes)
             self.assertIn("MISSING_PROMPT_FILE", codes)
 
+    def test_prompt_hash_is_line_ending_independent(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = self.init_project(Path(temporary))
+            prompt_path = project / "05_prompts" / "SC001-SH001-P001.md"
+            canonical = "第一行\n第二行\n"
+            prompt_path.write_bytes(canonical.replace("\n", "\r\n").encode("utf-8"))
+            canonical_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+            write_csv_rows(project / "05_prompts/prompt-index.csv", [{
+                "prompt_id": "SC001-SH001-P001",
+                "shot_id": "SC001-SH001",
+                "version": "v001",
+                "status": "draft",
+                "master_prompt_path": "05_prompts/SC001-SH001-P001.md",
+                "prompt_sha256": canonical_hash,
+            }])
+            result = run_script(VALIDATE_SCRIPT, str(project), "--strict-v2", "--json")
+            codes = {entry["code"] for entry in json.loads(result.stdout)["issues"]}
+            self.assertNotIn("PROMPT_HASH_MISMATCH", codes)
+
     def test_beat_sheet_checks_audio_and_asset_version_references(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = self.init_project(Path(temporary))
