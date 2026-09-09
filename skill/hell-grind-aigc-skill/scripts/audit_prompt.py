@@ -40,7 +40,13 @@ QUANTITY_PATTERN = re.compile(
     r"恰好|精确人数|只有|各出现一次|\b(?:exactly|only|one|two|three|four|five)\b|\b\d+\s*(?:人|名|个|只)",
     re.IGNORECASE,
 )
-REFERENCE_PATTERN = re.compile(r"参考|引用|reference|image[_ -]?\d+|<<<[^>]+>>>", re.IGNORECASE)
+REFERENCE_PATTERN = re.compile(
+    r"参考(?:这|该|下)?(?:一)?(?:张|个)?(?:图|图片|图像|照片|素材|资产|画面|帧)|"
+    r"引用(?:这|该|下)?(?:一)?(?:张|个)?(?:图|图片|图像|照片|素材|资产|画面|帧)|"
+    r"\breference\s+(?:image|photo|asset|frame|video)\b|"
+    r"image[_ -]?\d+|<<<[^>]+>>>",
+    re.IGNORECASE,
+)
 REFERENCE_SCOPE_PATTERN = re.compile(r"inherit|exclude|继承|排除|只(?:继承|参考)", re.IGNORECASE)
 PLATFORM_PATTERN = re.compile(r"平台适配|provider|model|seed|steps?|cfg|sampler|采样|运动强度", re.IGNORECASE)
 LIGHT_PATTERN = re.compile(r"光源|主光|曝光|颜色|材质|天气|lighting|exposure|color|material|weather", re.IGNORECASE)
