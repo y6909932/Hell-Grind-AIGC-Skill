@@ -24,6 +24,12 @@ def run_json(*args: str) -> tuple[subprocess.CompletedProcess[str], dict]:
     return result, payload
 
 
+def canonical_text_sha256(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
 def test_minimal_example_passes_strict_v2_validation() -> None:
     result, payload = run_json(str(VALIDATE), str(EXAMPLE), "--strict-v2", "--json")
     assert result.returncode == 0, result.stdout + result.stderr
@@ -60,5 +66,5 @@ def test_prompt_index_hash_matches_master_prompt() -> None:
         newline="", encoding="utf-8"
     ) as handle:
         row = next(csv.DictReader(handle))
-    actual = hashlib.sha256(PROMPT.read_bytes()).hexdigest()
+    actual = canonical_text_sha256(PROMPT)
     assert row["prompt_sha256"] == actual
