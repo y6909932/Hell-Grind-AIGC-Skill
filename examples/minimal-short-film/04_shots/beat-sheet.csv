@@ -1,0 +1,4 @@
+shot_id,beat_order,start_seconds,end_seconds,actor_or_source,trigger,action,contact_target,reaction,end_state,dialogue_id,audio_cue_id
+SC001-SH001,1,0,2,AST-CHAR-MEI@v001,脚边金属余响,视线下移;肩膀收紧;呼吸停顿,,注意到钥匙,准备屈膝,,AUD-RAIN
+SC001-SH001,2,2,4,AST-CHAR-MEI@v001,看到钥匙,屈膝;右手拇指和食指捏起钥匙,AST-PROP-BRASS-KEY@v001,钥匙离开湿地面,右手持钥匙,,AUD-KEY
+SC001-SH001,3,4,6,AST-CHAR-MEI@v001,拿起钥匙,半直立;握紧钥匙;看向道路左侧,AST-PROP-BRASS-KEY@v001,表情转为克制警觉,右手握钥匙并警戒,,AUD-RAIN

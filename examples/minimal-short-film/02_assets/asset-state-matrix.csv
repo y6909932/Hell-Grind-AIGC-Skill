@@ -1,0 +1,4 @@
+asset_version_id,asset_id,version,state_name,identity_invariants,state_variables,costume_or_surface,damage_or_weathering,carried_props,reference_ids,approval_status,notes
+AST-CHAR-MEI@v001,AST-CHAR-MEI,v001,night_shift_wet,成年女维修员;黑色低马尾;左袖窄反光条,疲惫;警觉前,深蓝工作服;被雨水打湿,无伤,无,,approved,
+AST-PROP-BRASS-KEY@v001,AST-PROP-BRASS-KEY,v001,wet_floor,单把;圆形钥匙头;边缘磨损,位于湿地面,暗金黄铜,旧磨损,,,approved,
+AST-LOC-ROADSIDE-GARAGE@v001,AST-LOC-ROADSIDE-GARAGE,v001,after_rain_night,半开卷帘门;旧荧光灯;湿地面,夜晚;雨刚停,旧水泥;湿金属,正常老化,,,approved,

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "base_version": "0.1.0",
+  "managed_files": [
+    {
+      "path": ".github\\workflows\\web-ci.yml",
+      "sha256": "c322b9cada0bea610d074b416abee671bc01d82a7add7beaddc110241bb39eda"
+    },
+    {
+      "path": "scripts\\run-local-tests.ps1",
+      "sha256": "504514239f092c812d381584826765fd97621590f0eec912e9d911256a275c11"
+    },
+    {
+      "path": "docs\\DEVELOPMENT-WORKFLOW.md",
+      "sha256": "b1dcddd67aff9d216c0030e58c37a2d60a5a0a4d8452304faf476bffc2550299"
+    }
+  ]
+}

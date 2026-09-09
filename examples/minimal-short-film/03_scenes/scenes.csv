@@ -1,0 +1,2 @@
+scene_id,scene_order,title,location_id,time_of_day,story_goal,open_state,close_state,status,notes
+SC001,1,钥匙,AST-LOC-ROADSIDE-GARAGE,night,梅发现不该出现的钥匙并产生警觉,梅疲惫值夜班;钥匙在湿地面;卷帘门半开,梅右手握钥匙并看向道路左侧,ready,6秒单场单镜

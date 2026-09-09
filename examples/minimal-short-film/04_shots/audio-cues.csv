@@ -1,0 +1,3 @@
+audio_cue_id,shot_id,start_seconds,end_seconds,category,source,content_or_effect,spatial_position,mix_priority,continuity_key,notes
+AUD-RAIN,SC001-SH001,0,6,ambience,雨棚与远处道路,低声滴水与远处道路环境音,环境包围,low,RAIN-BED-01,全镜持续
+AUD-KEY,SC001-SH001,2.3,2.7,foley,黄铜钥匙,轻微金属余响,前景偏左,medium,KEY-FOLEY-01,只出现一次

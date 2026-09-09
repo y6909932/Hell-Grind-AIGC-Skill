@@ -1,0 +1,4 @@
+asset_id,asset_type,name,version,status,identity_invariants,reference_ids,rights_status,approved_by,notes
+AST-CHAR-MEI,character,梅,v001,approved,成年女维修员;黑色低马尾;左袖窄反光条,,original,demo,极简样例原创角色
+AST-PROP-BRASS-KEY,prop,旧黄铜钥匙,v001,approved,单把;圆形钥匙头;边缘磨损,,original,demo,唯一关键道具
+AST-LOC-ROADSIDE-GARAGE,location,路边维修站门口,v001,approved,半开卷帘门;旧荧光灯;湿地面,,original,demo,原创地点

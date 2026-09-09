@@ -2,3 +2,7 @@
 __pycache__/
 *.py[cod]
 /.worktrees/
+
+# web-ci-dev-base:start
+.ai-results/
+# web-ci-dev-base:end

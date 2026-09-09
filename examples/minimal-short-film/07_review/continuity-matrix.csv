@@ -1,0 +1,2 @@
+shot_id,asset_version_ids,screen_direction,spatial_state,costume_state,injury_state,prop_state,environment_state,action_in,action_out,audio_state,open_issues,notes
+SC001-SH001,AST-CHAR-MEI@v001;AST-PROP-BRASS-KEY@v001;AST-LOC-ROADSIDE-GARAGE@v001,梅看向道路左侧,梅右;钥匙左前转右手;卷帘门后,深蓝湿工作服;左袖反光条,无伤,钥匙地面到右手;唯一一把,夜晚;雨刚停;卷帘门半开,梅疲惫值夜班,梅右手握钥匙并警戒,雨棚滴水持续;钥匙余响一次,,单镜无跨镜未决项
