@@ -177,6 +177,12 @@ def require_asset_version_references(
             issues.append(issue("MISSING_REFERENCE", relative, f"row {row_number} references missing {column}: {value}"))
 
 
+def canonical_text_sha256(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
 def validate_prompt_artifacts(root: Path, prompts: list[dict[str, str]], issues: list[dict[str, str]]) -> None:
     relative = "05_prompts/prompt-index.csv"
     root_resolved = root.resolve()
@@ -199,9 +205,13 @@ def validate_prompt_artifacts(root: Path, prompts: list[dict[str, str]], issues:
         if not re.fullmatch(r"[0-9a-f]{64}", declared):
             issues.append(issue("INVALID_PROMPT_HASH", relative, f"row {row_number} has invalid prompt_sha256: {declared}"))
             continue
-        actual = hashlib.sha256(candidate.read_bytes()).hexdigest()
+        try:
+            actual = canonical_text_sha256(candidate)
+        except (OSError, UnicodeError) as error:
+            issues.append(issue("INVALID_PROMPT_ENCODING", relative, f"row {row_number} prompt is not readable UTF-8 text: {raw_path}: {error}"))
+            continue
         if actual != declared:
-            issues.append(issue("PROMPT_HASH_MISMATCH", relative, f"row {row_number} prompt_sha256 does not match {raw_path}"))
+            issues.append(issue("PROMPT_HASH_MISMATCH", relative, f"row {row_number} prompt_sha256 does not match canonical UTF-8/LF content of {raw_path}"))
 
 
 def normalize_continuity_state(value: str) -> tuple[str, ...]:
