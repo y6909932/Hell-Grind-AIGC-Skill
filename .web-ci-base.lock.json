@@ -8,7 +8,7 @@
     },
     {
       "path": "scripts\\run-local-tests.ps1",
-      "sha256": "4849c6ec1f2f76a1e266b10191aa9831302652ec54949f0a5ddfa9f76c4903c9"
+      "sha256": "361c8b51ebe70f6d9be29b6dec5d9b04d93f7390701ca7e54dc06535b73ec3c5"
     },
     {
       "path": "docs\\DEVELOPMENT-WORKFLOW.md",
