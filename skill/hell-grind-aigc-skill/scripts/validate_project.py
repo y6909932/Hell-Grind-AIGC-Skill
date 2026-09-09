@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import re
 from collections import Counter
@@ -161,6 +162,85 @@ def require_references(
         for candidate in values:
             if candidate and candidate not in valid:
                 issues.append(issue("MISSING_REFERENCE", relative, f"row {index} references missing {column}: {candidate}"))
+
+
+def require_asset_version_references(
+    relative: str,
+    rows: list[dict[str, str]],
+    column: str,
+    valid: set[str],
+    issues: list[dict[str, str]],
+) -> None:
+    for row_number, row in enumerate(rows, start=2):
+        value = row.get(column, "")
+        if value.startswith("AST-") and value not in valid:
+            issues.append(issue("MISSING_REFERENCE", relative, f"row {row_number} references missing {column}: {value}"))
+
+
+def canonical_text_sha256(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def validate_prompt_artifacts(root: Path, prompts: list[dict[str, str]], issues: list[dict[str, str]]) -> None:
+    relative = "05_prompts/prompt-index.csv"
+    root_resolved = root.resolve()
+    for row_number, row in enumerate(prompts, start=2):
+        raw_path = row.get("master_prompt_path", "")
+        if not raw_path:
+            continue
+        candidate = (root / raw_path).resolve()
+        try:
+            candidate.relative_to(root_resolved)
+        except ValueError:
+            issues.append(issue("INVALID_PROMPT_PATH", relative, f"row {row_number} master_prompt_path escapes project root: {raw_path}"))
+            continue
+        if not candidate.is_file():
+            issues.append(issue("MISSING_PROMPT_FILE", relative, f"row {row_number} master_prompt_path does not exist: {raw_path}"))
+            continue
+        declared = row.get("prompt_sha256", "").lower()
+        if not declared:
+            continue
+        if not re.fullmatch(r"[0-9a-f]{64}", declared):
+            issues.append(issue("INVALID_PROMPT_HASH", relative, f"row {row_number} has invalid prompt_sha256: {declared}"))
+            continue
+        try:
+            actual = canonical_text_sha256(candidate)
+        except (OSError, UnicodeError) as error:
+            issues.append(issue("INVALID_PROMPT_ENCODING", relative, f"row {row_number} prompt is not readable UTF-8 text: {raw_path}: {error}"))
+            continue
+        if actual != declared:
+            issues.append(issue("PROMPT_HASH_MISMATCH", relative, f"row {row_number} prompt_sha256 does not match canonical UTF-8/LF content of {raw_path}"))
+
+
+def normalize_continuity_state(value: str) -> tuple[str, ...]:
+    return tuple(sorted(part.strip().casefold() for part in re.split(r"[;；]", value) if part.strip()))
+
+
+def validate_continuity_handoffs(shots: list[dict[str, str]], issues: list[dict[str, str]]) -> None:
+    by_scene: dict[str, list[tuple[float, dict[str, str]]]] = {}
+    for shot in shots:
+        raw_order = shot.get("shot_order", "")
+        try:
+            order = float(raw_order)
+        except ValueError:
+            continue
+        by_scene.setdefault(shot.get("scene_id", ""), []).append((order, shot))
+    for scene_shots in by_scene.values():
+        ordered = [shot for _, shot in sorted(scene_shots, key=lambda item: item[0])]
+        for previous, current in zip(ordered, ordered[1:]):
+            outgoing = previous.get("continuity_out", "")
+            incoming = current.get("continuity_in", "")
+            if not outgoing or not incoming:
+                continue
+            if normalize_continuity_state(outgoing) != normalize_continuity_state(incoming):
+                issues.append(issue(
+                    "CONTINUITY_HANDOFF_MISMATCH",
+                    "04_shots/shots.csv",
+                    f"{previous.get('shot_id', '')} continuity_out does not match {current.get('shot_id', '')} continuity_in",
+                    "warning",
+                ))
 
 
 def validate_statuses(
@@ -371,7 +451,7 @@ def validate_project(root: Path, *, strict_v2: bool = False) -> dict[str, Any]:
         reference_ids = validate_ids("02_assets/reference-scope.csv", references, "reference_id", V2_REFERENCE_ID_PATTERN, issues)
         asset_version_ids = validate_ids("02_assets/asset-state-matrix.csv", asset_states, "asset_version_id", V2_ASSET_VERSION_PATTERN, issues)
         prompt_ids = validate_ids("05_prompts/prompt-index.csv", prompts, "prompt_id", V2_PROMPT_ID_PATTERN, issues)
-        validate_ids("04_shots/audio-cues.csv", audio_cues, "audio_cue_id", V2_AUDIO_ID_PATTERN, issues)
+        audio_cue_ids = validate_ids("04_shots/audio-cues.csv", audio_cues, "audio_cue_id", V2_AUDIO_ID_PATTERN, issues)
         validate_ids("06_generations/iteration-log.csv", iterations, "iteration_id", V2_ITERATION_ID_PATTERN, issues)
         validate_ids("07_review/waivers.csv", waivers, "waiver_id", V2_WAIVER_ID_PATTERN, issues)
 
@@ -383,6 +463,9 @@ def validate_project(root: Path, *, strict_v2: bool = False) -> dict[str, Any]:
         require_references("04_shots/shots.csv", shots, "asset_version_ids", asset_version_ids, issues, split=";")
         require_references("04_shots/shots.csv", shots, "prompt_id", prompt_ids, issues)
         require_references("04_shots/beat-sheet.csv", beats, "shot_id", shot_ids, issues)
+        require_asset_version_references("04_shots/beat-sheet.csv", beats, "actor_or_source", asset_version_ids, issues)
+        require_asset_version_references("04_shots/beat-sheet.csv", beats, "contact_target", asset_version_ids, issues)
+        require_references("04_shots/beat-sheet.csv", beats, "audio_cue_id", audio_cue_ids, issues)
         require_references("04_shots/audio-cues.csv", audio_cues, "shot_id", shot_ids, issues)
         require_references("05_prompts/prompt-index.csv", prompts, "shot_id", shot_ids, issues)
         require_references("06_generations/generation-log.csv", generations, "prompt_id", prompt_ids, issues)
@@ -391,6 +474,9 @@ def validate_project(root: Path, *, strict_v2: bool = False) -> dict[str, Any]:
         require_references("06_generations/iteration-log.csv", iterations, "result_generation_ids", generation_ids, issues, split=";")
         require_references("07_review/continuity-matrix.csv", continuity, "asset_version_ids", asset_version_ids, issues, split=";")
         require_references("07_review/waivers.csv", waivers, "shot_id", shot_ids, issues)
+
+        validate_prompt_artifacts(root, prompts, issues)
+        validate_continuity_handoffs(shots, issues)
 
         validate_statuses("02_assets/assets.csv", assets, "status", {"proposed", "reference_ready", "approved", "deprecated"}, issues)
         validate_statuses("02_assets/reference-scope.csv", references, "approval_status", {"proposed", "approved", "rejected", "deprecated"}, issues)

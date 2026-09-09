@@ -1,0 +1,2 @@
+scene_id,zone_id,zone_name,screen_relation,depth_layer,entry_exit,anchor_objects,allowed_assets,lighting_source,continuity_notes
+SC001,Z01,维修站门口,梅右;钥匙左前;卷帘门后,前景钥匙;中景梅;背景卷帘门,道路在画面左外侧,卷帘门;门楣荧光灯,AST-CHAR-MEI;AST-PROP-BRASS-KEY;AST-LOC-ROADSIDE-GARAGE,门楣旧荧光灯;道路弱暖反射,屏幕方向固定;不新增车辆或人物
