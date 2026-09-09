@@ -1,2 +1,2 @@
 prompt_id,shot_id,version,status,richness,master_prompt_path,adapter_path,parent_version,change_reason,changed_variables,prompt_sha256,approved_by,notes
-SC001-SH001-P001,SC001-SH001,v001,approved,standard,05_prompts/SC001-SH001-P001.md,,,initial demo,initial contract,983cac65bcf5be9c19fd91e3df2c04bcbbff1cf5af188328402dca87a2592aeb,demo,平台无关七层提示词
+SC001-SH001-P001,SC001-SH001,v001,approved,standard,05_prompts/SC001-SH001-P001.md,,,initial demo,initial contract,38a06eb9dc07c931acc4766182ff7e3b15185ebd47e1e7db3a70db20a826bb9d,demo,平台无关七层提示词
