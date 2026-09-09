@@ -1,0 +1,54 @@
+name: adoption-windows-validation
+
+on:
+  push:
+    branches:
+      - chore/adopt-web-ci-dev-base-v0.1
+
+permissions:
+  contents: read
+
+jobs:
+  windows-validation:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install pytest for development validation
+        run: python -m pip install pytest
+      - name: Run generated read-only local runner
+        shell: powershell
+        run: .\scripts\run-local-tests.ps1
+      - name: Checkout web-ci-dev-base V0.1
+        uses: actions/checkout@v4
+        with:
+          repository: y6909932/web-ci-dev-base
+          ref: main
+          path: _web-ci-base
+      - name: Verify base installer can safely re-apply
+        shell: powershell
+        run: |
+          $target = $env:GITHUB_WORKSPACE
+          .\_web-ci-base\bootstrap\install.ps1 -TargetPath $target
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $managed = @(
+            '.github\workflows\web-ci.yml',
+            'scripts\run-local-tests.ps1',
+            'docs\DEVELOPMENT-WORKFLOW.md',
+            '.web-ci-base.lock.json',
+            'AGENTS.md',
+            '.gitignore'
+          )
+          $first = @{}
+          foreach ($relative in $managed) {
+            $first[$relative] = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $target $relative)).Hash
+          }
+          .\_web-ci-base\bootstrap\install.ps1 -TargetPath $target
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          foreach ($relative in $managed) {
+            $second = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $target $relative)).Hash
+            if ($first[$relative] -ne $second) { throw "same-version reinstall changed $relative" }
+          }
+          Write-Host 'PASS: Windows runner and base reinstall contract'
