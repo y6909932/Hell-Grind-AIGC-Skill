@@ -46,6 +46,11 @@ try {
     $testArgs = @($config.adapter.test_args | ForEach-Object { [string]$_ })
     Require-Command -Name $testProgram
 
+    # Python's locale default on Windows PowerShell 5.1 may be a legacy code page.
+    # The python-pytest adapter standardizes text I/O to UTF-8 so the same tests run cross-platform.
+    $env:PYTHONUTF8 = '1'
+    $env:PYTHONIOENCODING = 'utf-8'
+
     New-Item -ItemType Directory -Force -Path $resultDir | Out-Null
     Set-Location $repoRoot
 
