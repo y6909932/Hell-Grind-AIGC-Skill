@@ -5,4 +5,7 @@ __pycache__/
 
 # web-ci-dev-base:start
 .ai-results/
+.pytest_cache/
+__pycache__/
+*.py[cod]
 # web-ci-dev-base:end
