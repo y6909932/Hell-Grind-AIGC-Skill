@@ -1,0 +1,3 @@
+scene_id,zone_id,zone_name,screen_relation,depth_layer,entry_exit,anchor_objects,allowed_assets,lighting_source,continuity_notes
+SC001,Z001,卷帘门门槛,梅主要位于画面右侧;道路方向在画面左侧,midground,雨棚内↔门槛,半开卷帘门;门楣荧光灯,AST-CHAR-MEI;AST-PROP-BRASS-KEY;AST-LOC-ROADSIDE-GARAGE,冷白旧荧光灯;道路弱暖反射,卷帘门全程半开
+SC001,Z002,门外湿地面,钥匙初始在梅右脚前方,foreground,无,积水;地面反光,AST-CHAR-MEI;AST-PROP-BRASS-KEY;AST-LOC-ROADSIDE-GARAGE,门楣荧光灯反射,SH001 钥匙在此;SH002 被右手拾起

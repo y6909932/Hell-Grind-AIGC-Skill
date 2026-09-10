@@ -1,0 +1,5 @@
+shot_id,asset_version_ids,screen_direction,spatial_state,costume_state,injury_state,prop_state,environment_state,action_in,action_out,audio_state,open_issues,notes
+SC001-SH001,AST-CHAR-MEI@v001;AST-PROP-BRASS-KEY@v001;AST-LOC-ROADSIDE-GARAGE@v001,梅位于画面右侧;注意脚边,卷帘门半开;钥匙在右脚前方湿地面,深蓝湿工作服;左袖窄反光条,无伤,唯一钥匙在地面,夜晚雨后;雨棚滴水持续,疲惫值夜,注意钥匙但未拾取,RAIN-BED,,向 SH002 交接地面钥匙
+SC001-SH002,AST-CHAR-MEI@v001;AST-PROP-BRASS-KEY@v001;AST-LOC-ROADSIDE-GARAGE@v001,机位与 SH001 同侧,卷帘门半开;梅半蹲,深蓝湿工作服;左袖窄反光条,无伤,钥匙从地面转移到右手;唯一一把,夜晚雨后;雨棚滴水持续,注意地面钥匙,半蹲右手握钥匙,RAIN-BED;KEY-PICKUP,,向 SH003 交接右手持钥匙
+SC001-SH003,AST-CHAR-MEI@v001;AST-PROP-BRASS-KEY@v001;AST-LOC-ROADSIDE-GARAGE@v001,梅看向道路左侧,卷帘门半开;梅直立,深蓝湿工作服;左袖窄反光条,无伤,右手握唯一黄铜钥匙,夜晚雨后;雨棚滴水持续,半蹲右手握钥匙,直立看道路左侧,RAIN-BED;ROAD-LEFT,,向 SH004 交接警觉方向
+SC001-SH004,AST-CHAR-MEI@v001;AST-PROP-BRASS-KEY@v001;AST-LOC-ROADSIDE-GARAGE@v001,梅持续看向道路左侧,卷帘门半开;梅退入雨棚半步,深蓝湿工作服;左袖窄反光条,无伤,右手握唯一黄铜钥匙,夜晚雨后;雨棚滴水持续,直立看道路左侧,退入雨棚半步并警戒等待,RAIN-BED,,短片终态

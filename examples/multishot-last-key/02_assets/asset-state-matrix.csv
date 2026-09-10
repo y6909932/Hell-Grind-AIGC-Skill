@@ -1,0 +1,4 @@
+asset_version_id,asset_id,version,state_name,identity_invariants,state_variables,costume_or_surface,damage_or_weathering,carried_props,reference_ids,approval_status,notes
+AST-CHAR-MEI@v001,AST-CHAR-MEI,v001,雨夜值班,成年女维修员;黑色低马尾,疲惫→注意→警觉;无伤,深蓝湿工作服;左袖窄反光条,衣物被雨打湿,SH001无;SH002起右手黄铜钥匙,,approved,跨镜不得换装或换手
+AST-PROP-BRASS-KEY@v001,AST-PROP-BRASS-KEY,v001,唯一黄铜钥匙,圆形钥匙头;边缘磨损;暗金,SH001地面;SH002起右手,旧黄铜表面,轻微磨损;带水滴,,,approved,数量恒为一
+AST-LOC-ROADSIDE-GARAGE@v001,AST-LOC-ROADSIDE-GARAGE,v001,雨后夜班,半开卷帘门;雨棚;湿地面,夜晚;雨刚停;雨棚滴水持续,旧金属卷帘门;积水反光,潮湿;老旧,,,approved,四镜空间锚点一致

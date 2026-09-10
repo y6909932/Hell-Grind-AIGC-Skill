@@ -1,0 +1,11 @@
+shot_id,beat_order,start_seconds,end_seconds,actor_or_source,trigger,action,contact_target,reaction,end_state,dialogue_id,audio_cue_id
+SC001-SH001,1,0,2,AST-CHAR-MEI@v001,雨夜值班,疲惫站立;听见脚边金属余响,,视线开始下移,注意脚边,,AUD-SH001-RAIN
+SC001-SH001,2,2,4,AST-CHAR-MEI@v001,看到地面钥匙,肩膀收紧;右手仍垂下;不触碰钥匙,,确认钥匙位置,钥匙仍在地面,,
+SC001-SH002,1,0,1.5,AST-CHAR-MEI@v001,已确认钥匙,屈膝;右手伸向钥匙,AST-PROP-BRASS-KEY@v001,重心前移,右手接近钥匙,,AUD-SH002-RAIN
+SC001-SH002,2,1.5,2.8,AST-CHAR-MEI@v001,右手到达钥匙,拇指和食指捏住钥匙;抬离湿地面,AST-PROP-BRASS-KEY@v001,钥匙带起小水滴,钥匙离地,,AUD-SH002-KEY
+SC001-SH002,3,2.8,4,AST-CHAR-MEI@v001,钥匙离地,保持半蹲;右手把钥匙收进掌心,AST-PROP-BRASS-KEY@v001,警觉增加,右手握钥匙,,
+SC001-SH003,1,0,1.5,AST-CHAR-MEI@v001,右手已握钥匙,从半蹲起身;右手不换手,AST-PROP-BRASS-KEY@v001,身体直立,直立持钥匙,,AUD-SH003-RAIN
+SC001-SH003,2,1.5,4,AST-CHAR-MEI@v001,远处道路低频声,抬头;视线转向道路左侧;肩颈收紧,,进入克制警觉,看道路左侧;右手握钥匙,,AUD-SH003-ROAD
+SC001-SH004,1,0,1.5,AST-CHAR-MEI@v001,已锁定道路左侧,保持头部方向;右手握紧钥匙,AST-PROP-BRASS-KEY@v001,警戒维持,准备后退,,AUD-SH004-RAIN
+SC001-SH004,2,1.5,3,AST-CHAR-MEI@v001,持续警戒,左脚先移;向雨棚内后退半步,,保持道路左侧视线,退入雨棚半步,,
+SC001-SH004,3,3,4,AST-CHAR-MEI@v001,后退完成,停稳;不再移动;右手钥匙不变,AST-PROP-BRASS-KEY@v001,警戒等待,警戒等待,,
