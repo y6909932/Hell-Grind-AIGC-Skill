@@ -1,5 +1,5 @@
 prompt_id,shot_id,version,status,richness,master_prompt_path,adapter_path,parent_version,change_reason,changed_variables,prompt_sha256,approved_by,notes
 SC001-SH001-P001,SC001-SH001,v001,checked,L1-L7,05_prompts/SC001-SH001-P001.md,,,首版多镜头连续性实验,初始版本,9e5820be953a6a8c28754d12d1f06ee08f89fa2534efc843e5535bc14e3dafe1,,provider-agnostic master prompt
-SC001-SH002-P001,SC001-SH002,v001,checked,L1-L7,05_prompts/SC001-SH002-P001.md,,,首版多镜头连续性实验,初始版本,52d3530537bbd8f10ad4f614b00551a3f4e99a1ff2c6e68ff352662b6fa7c19b,,provider-agnostic master prompt
+SC001-SH002-P001,SC001-SH002,v001,checked,L1-L7,05_prompts/SC001-SH002-P001.md,,,首版多镜头连续性实验,初始版本,11fd5046262ab8142dd05faee4d744d56225eede7b76bb8873d70c093aa8622e,,provider-agnostic master prompt
 SC001-SH003-P001,SC001-SH003,v001,checked,L1-L7,05_prompts/SC001-SH003-P001.md,,,首版多镜头连续性实验,初始版本,70aa8bb489dc48781e158399684916592cb583344e43320a1a4ca71e91a811f4,,provider-agnostic master prompt
 SC001-SH004-P001,SC001-SH004,v001,checked,L1-L7,05_prompts/SC001-SH004-P001.md,,,首版多镜头连续性实验,初始版本,e6c25f764f8df65b9336d5d47baa80ce3b76c1fe6218f39faf50d79f3c17a41a,,provider-agnostic master prompt
