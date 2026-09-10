@@ -1,0 +1,2 @@
+scene_id,scene_order,title,location_id,time_of_day,story_goal,open_state,close_state,status,notes
+SC001,1,雨夜维修站门口,AST-LOC-ROADSIDE-GARAGE,night,梅发现并拾起钥匙后进入警戒等待,梅独自值夜;钥匙在右脚前方湿地面;卷帘门半开,梅退入雨棚半步;右手握钥匙;看向道路左侧;卷帘门半开,ready,4 镜头连续动作链
