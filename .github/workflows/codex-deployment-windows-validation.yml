@@ -44,3 +44,4 @@ jobs:
           if ($tail -ne "local drift for test") { throw "drifted file was overwritten" }
 
           Write-Host "PASS: Codex deployment install/update/status/drift protection"
+          exit 0
