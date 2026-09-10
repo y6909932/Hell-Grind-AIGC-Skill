@@ -1,0 +1,23 @@
+name: multishot-windows-validation
+
+on:
+  push:
+    branches:
+      - feat/multishot-generation-experiment-v0.1
+
+permissions:
+  contents: read
+
+jobs:
+  windows-validation:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install pytest for multishot validation
+        run: python -m pip install pytest
+      - name: Run generated read-only local runner
+        shell: powershell
+        run: .\scripts\run-local-tests.ps1
